@@ -1,0 +1,56 @@
+html, body {
+    /* min-height: 100% !important; */
+    height: 100%;
+    /* height: 100%; */
+    padding:20px;
+
+    overflow: hidden;
+  }
+
+.filetablecontainer {
+    margin-top: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+tbody, thead {
+    text-align: center;
+    
+}
+
+.ui.table thead tr:first-child > th{
+    position: sticky !important;
+    top: 0;
+    z-index: 2;
+}
+
+.ui.table tfoot tr:first-child > th {
+    position: sticky !important;
+    bottom: 0;
+    z-index: 2;
+}
+
+.column {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* #imageEditorSegment {
+    height: 100% !important;
+} */
+
+.ui.grid {
+    height: 100%;
+}
+
+.left {
+    height: 100% !important;
+    display: flex; flex-direction: column;
+}
+
+.rightcol {
+    display: flex; 
+    flex-direction: column;
+    height: 100%;
+}
