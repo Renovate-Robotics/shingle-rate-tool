@@ -3,11 +3,9 @@
 // React imports 
 import React, { useState } from 'react';
 
+// Redux imports
 import store from '../store/store'
 import { Provider } from 'react-redux'
-
-import { useSelector } from 'react-redux';
-import { selectProjectParameters, selectImages } from '../store/selectors';
 
 // Custom component imports
 import ImageAnnotation from '../components/ImageAnnotation';
@@ -19,23 +17,28 @@ import ProductivityCharts from '../components/ProductivityCharts';
 export default function Main() {
 
   return (
+
+    // Redux store provider
     <Provider store={store}>
+
+    {/* Main grid */}
     <div class="ui grid">
+
+      {/* Left column */}
       <div class="eight wide column">
         <div class="ui segment left">
-
           <ImageAnnotation/>
           <ImageMetadataTable/>
-
         </div>
       </div>
 
+      {/* Middle column */}
       <div class="two wide column rightcol">
         <div class="ui segment">
           <ProjectParameters/>
         </div>
 
-        {/* <div class="ui segment">
+        <div class="ui segment">
           <div class="ui message">
             <div class="header">
               Current Labor Hours Needed
@@ -44,17 +47,16 @@ export default function Main() {
             <div class="header">
               Cost of Labor
             </div>
-            <p>${(laborHours*projectData.roofer_wage).toFixed(2)}</p>
+            {/* <p>${(laborHours*projectData.roofer_wage).toFixed(2)}</p> */}
           </div>
-        </div> */}
+        </div>
       </div>
 
+      {/* Right column */}
       <div class="six wide column rightcol">
-        
         <div class="ui segment">
           <ProductivityCharts/>
         </div>
-        
       </div>
 
       </div>

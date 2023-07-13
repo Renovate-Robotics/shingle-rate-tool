@@ -1,6 +1,7 @@
 // Importing createSlice function from Redux Toolkit
 import { createSlice } from '@reduxjs/toolkit'
 
+// Constants
 const DEFAULT_TIMESTEP = 10;
 const DEFAULT_NUM_ROOFERS = 10; 
 
@@ -18,7 +19,7 @@ export const imagesSlice = createSlice({
         // Reducer function to add an image to the state
         addImage: (state, action) => {
 
-            // const event = action.payload.event;
+            // Get the filenames and files from the action payload
             const filenames = action.payload.names;
             const files = action.payload.urls;
 
@@ -108,6 +109,7 @@ export const imagesSlice = createSlice({
             state.referenceImageIndex = idx;
         },
 
+        // Reducer function to add an annotation to an image
         addAnnotation: (state, action) => {
             // Get the annotation to add
             const annotation = action.payload.annotation;
@@ -115,10 +117,12 @@ export const imagesSlice = createSlice({
             state.images[state.selectedImageIndex].annotations.push(annotation);
         },
 
+        // Reducer function to set an image's finished flag to true
         setAnnotationFinished: (state, action) => {
             state.images[state.selectedImageIndex].finishedFlag = true;
         },
 
+        // Reducer function to set an image's calculated area
         setCalculatedArea: (state, action) => {
             state.images[state.selectedImageIndex].area_px = action.payload.area_px;
         }
@@ -132,4 +136,3 @@ export const { addImage, removeImage, moveImageUp, moveImageDown,
 
 // Exporting the imagesSlice reducer function
 export default imagesSlice.reducer;
-

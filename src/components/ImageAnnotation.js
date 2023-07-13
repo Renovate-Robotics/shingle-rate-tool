@@ -1,63 +1,74 @@
+// Importing necessary modules
 import { useDispatch } from 'react-redux';
 import React, { useState, useRef, useEffect } from 'react';
-
 import { useSelector } from 'react-redux';
 import { selectImages } from '../store/selectors';
-
 import { addAnnotation, setAnnotationFinished, setCalculatedArea } from '../store/reducers/imagesSlice';
 
+// Defining the ImageAnnotation component
 const ImageAnnotation = () => {
 
+  // Initializing the useDispatch and useSelector hooks
   const dispatch = useDispatch();
-
   const imageData = useSelector(selectImages);
   const selectedImageIndex = imageData.selectedImageIndex;
 
+  // Initializing the canvasRef and closeDistance variables
   const canvasRef = useRef(null);
   const closeDistance = 30;
 
+  // Initializing the annotations and finishedFlag variables
   let annotations = selectedImageIndex === -1 ? [] : imageData.images[selectedImageIndex].annotations 
   let finishedFlag = selectedImageIndex === -1 ? false : imageData.images[selectedImageIndex].finishedFlag 
 
+  // Defining the handleImageClick function
   const handleImageClick = (event) => {
 
+    // Getting the coordinates of the click event
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
+    // Creating an annotation object with the coordinates
     const annotation = { x, y };
 
+    // Checking if the annotation is finished
     if (!finishedFlag) {
 
-      // let imageDataCopy = [...imageData]
-
+      // Checking if there are already annotations
       if (annotations.length > 1) {
         const firstAnnotation = annotations[0];
+
+        // Calculating the distance between the new annotation and the first annotation
         const distance = Math.hypot(
           annotation.x - firstAnnotation.x,
           annotation.y - firstAnnotation.y
         );
   
+        // Checking if the distance is less than the closeDistance variable
         if (distance > closeDistance) {
 
+          // Adding the new annotation to the annotations array
           dispatch(addAnnotation({annotation: annotation}))
           
-          // imageDataCopy[selectedImageIndex].annotations = [...annotations, annotation];
-          // setImageData(imageDataCopy)
         } else {
 
-          // imageDataCopy[selectedImageIndex].annotations = [...annotations, firstAnnotation];
+          // Adding the first annotation to the annotations array
           dispatch(addAnnotation({annotation: firstAnnotation}))
 
+          // Calculating the enclosed area of the annotations
           const area = calculateEnclosedArea(annotations);
           dispatch(setCalculatedArea({area_px: area}))
         }
-      } else {
-		dispatch(addAnnotation({annotation: annotation}))
+      } 
+      else {
+		    dispatch(addAnnotation({annotation: annotation}))
       }
     }
   };
 
+  // Defining the calculateEnclosedArea function
+  // Shoelace formula: https://en.wikipedia.org/wiki/Shoelace_formula
   const calculateEnclosedArea = (points) => {
     const n = points.length;
     let area = 0;
@@ -72,40 +83,54 @@ const ImageAnnotation = () => {
     return area;
   };
 
+  // Defining the useEffect hook
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
+    // Clearing the canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Setting the stroke style and line width
     context.strokeStyle = 'red';
     context.lineWidth = 1;
 
+    // Checking if there are annotations
     if (annotations.length > 1) {
+
+      // Starting the path
       context.beginPath();
       context.moveTo(annotations[0].x, annotations[0].y);
 
+      // Getting the first and last annotations
       const firstAnnotation = annotations[0];
       const lastAnnotation = annotations[annotations.length - 1];
+
+      // Calculating the distance between the first and last annotations
       const distance = Math.hypot(
         lastAnnotation.x - firstAnnotation.x,
         lastAnnotation.y - firstAnnotation.y
       );
 
+      // Drawing the annotations
       annotations.forEach((annotation, index) => {
         const { x, y } = annotation;
         context.lineTo(x, y);
         context.stroke();
       });
 
+      // Checking if the distance is less than the closeDistance variable and there are more than 2 annotations
       if (distance < closeDistance && annotations.length > 2) {
         context.lineTo(firstAnnotation.x, firstAnnotation.y);
         context.stroke();
         context.closePath();
 
-		dispatch(setAnnotationFinished());
+		    // Setting the finishedFlag to true
+		    dispatch(setAnnotationFinished());
       }
     }
 
+    // Drawing the annotation points
     annotations.forEach((annotation) => {
       const { x, y } = annotation;
 
@@ -119,6 +144,7 @@ const ImageAnnotation = () => {
     
   }, [annotations]);
 
+  // Returning the component
   return (
     <div width="100%">
       <img
@@ -142,4 +168,5 @@ const ImageAnnotation = () => {
   );
 };
 
+// Exporting the ImageAnnotation component
 export default ImageAnnotation;
