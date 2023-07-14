@@ -3,14 +3,18 @@ import { useDispatch } from 'react-redux';
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { selectImages } from '../store/selectors';
+import { calculateEnclosedArea } from '../utils/utils';
 import { addAnnotation, setAnnotationFinished, setCalculatedArea } from '../store/reducers/imagesSlice';
+
+// Defining the maximum distance from the first click to close the polygon
+// (Measured in fraction of image width)
+const MAX_DISTANCE_TO_CLOSE = 0.05;
 
 // Defining the ImageAnnotation component
 const ImageAnnotation = () => {
 
+  // Set windowSize as a state so that a resize event triggers redraw to occur properly
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-
-  const videoFrame = document.getElementById('videoFrame');
 
   // Initializing the useDispatch and useSelector hooks
   const dispatch = useDispatch();
@@ -19,13 +23,12 @@ const ImageAnnotation = () => {
 
   // Initializing the canvasRef and closeDistance variables
   const canvasRef = useRef(null);
-  const closeDistance = 0.05;
 
   // Initializing the annotations and finishedFlag variables
   let annotations = selectedImageIndex === -1 ? [] : imageData.images[selectedImageIndex].annotations 
   let finishedFlag = selectedImageIndex === -1 ? false : imageData.images[selectedImageIndex].finishedFlag 
 
-  // Defining the handleImageClick function
+  // Do the following when user clicks on the image
   const handleImageClick = (event) => {
 
     // Getting the coordinates of the click event
@@ -35,75 +38,72 @@ const ImageAnnotation = () => {
 
     // Creating an annotation object with the coordinates
     const annotation = { x, y };
-    const scaledAnnotation = {x: (x/videoFrame.width), y: (y/videoFrame.height)}
+
+    // Get the canvas's parent div in order to use image size as the canvas size
+    const imageDiv = document.getElementById('imageDiv');
+
+    // Scale the click from pixel space to image ratio space
+    const scaledAnnotation = {x: (x/imageDiv.width), y: (y/imageDiv.height)}
 
     // Checking if the annotation is finished
+    // (If it's finished don't bother doing anything)
     if (!finishedFlag) {
 
-      // Checking if there are already annotations
-      if (annotations.length > 1) {
-        const firstAnnotation = annotations[0];
+      // If there are less than 2 annotations, don't bother checking for polygon closure
+      if (annotations.length <=2) {
 
-        // Calculating the distance between the new annotation and the first annotation
-        const distance = Math.hypot(
-          annotation.x - firstAnnotation.x,
-          annotation.y - firstAnnotation.y
-        ) * videoFrame.height;
-  
-        // Checking if the distance is less than the closeDistance variable
-        if (distance > closeDistance) {
+        // Just add the scaled annotation to the annotation list and move on
+        dispatch(addAnnotation({annotation: scaledAnnotation}))
+        return;
+      }
 
-          // Adding the new annotation to the annotations array
-          dispatch(addAnnotation({annotation: scaledAnnotation}))
-          
-        } else {
+      // If there *are* more than 2 annotations, check for polygon closure
 
-          // Adding the first annotation to the annotations array
-          dispatch(addAnnotation({annotation: firstAnnotation}))
+      // Calculating the distance between the new annotation and the first annotation
+      const firstAnnotation = annotations[0];
+      const distance = Math.hypot(scaledAnnotation.x - firstAnnotation.x, scaledAnnotation.y - firstAnnotation.y) ;
 
-          // Calculating the enclosed area of the annotations
-          const area = calculateEnclosedArea(annotations);
-          dispatch(setCalculatedArea({area_px: area}))
-        }
+      // If the distance exceeds the maximum distance to close, don't close the polygon
+      // Just add the annotation and move on
+      if (distance > MAX_DISTANCE_TO_CLOSE) {
+        dispatch(addAnnotation({annotation: scaledAnnotation}))
+        return;
       } 
+
+      // However if the distance is *less* than the maximum distance to close, close the polygon,
+      // calculate and set the area, and set the finishedFlag to true
       else {
-		    dispatch(addAnnotation({annotation: scaledAnnotation}))
+
+        // Add the first annotation to the annotations array
+        dispatch(addAnnotation({annotation: firstAnnotation}))
+
+        // Calculating the enclosed area of the annotations
+        const area = calculateEnclosedArea(annotations);
+
+        // Set the calculated area in the store
+        dispatch(setCalculatedArea({area_px: area}))
+        
+        // Set the finishedFlag to true
+        dispatch(setAnnotationFinished())
       }
     }
   };
 
-  // Defining the calculateEnclosedArea function
-  // Shoelace formula: https://en.wikipedia.org/wiki/Shoelace_formula
-  const calculateEnclosedArea = (points) => {
-    const n = points.length;
-    let area = 0;
-
-    for (let i = 0; i < n; i++) {
-      const current = points[i];
-      const next = points[(i + 1) % n];
-      area += current.x * next.y - current.y * next.x;
-    }
-
-    area = Math.abs(area) / 2;
-    return area;
-  };
-
-  // Defining the useEffect hook
+  // Defining the useEffect hook to update canvas when annotations change or window resizes
   useEffect(() => {
 
-    console.log(annotations)
-
+    // Get the canvas
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
-    // const parentRect = canvasRef.current.getBoundingClientRect();
 
-    const videoFrame = document.getElementById('videoFrame');
+    // Get the canvas's parent div in order to use image size as the canvas size
+    const imageDiv = document.getElementById('imageDiv');
 
-    canvas.width = videoFrame.width;
-    canvas.height= videoFrame.height;
-
-    canvas.style.top = videoFrame.offsetTop+'px';
-    canvas.style.left = videoFrame.offsetLeft+'px';
+    // Set the canvas size to the image size (in case of resize)
+    canvas.width = imageDiv.width;
+    canvas.height= imageDiv.height;
+    canvas.style.top = imageDiv.offsetTop+'px';
+    canvas.style.left = imageDiv.offsetLeft+'px';
 
     // Clearing the canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -112,51 +112,12 @@ const ImageAnnotation = () => {
     context.strokeStyle = 'red';
     context.lineWidth = 1;
 
-    // Checking if there are annotations
-    if (annotations.length > 1) {
-
-      // Starting the path
-      context.beginPath();
-      context.moveTo(annotations[0].x * videoFrame.width, annotations[0].y * videoFrame.height);
-
-      // Getting the first and last annotations
-      const firstAnnotation = annotations[0];
-      const lastAnnotation = annotations[annotations.length - 1];
-
-      // Calculating the distance between the first and last annotations
-      const distance = Math.hypot(
-        lastAnnotation.x - firstAnnotation.x,
-        lastAnnotation.y - firstAnnotation.y
-      );
-
-      // Drawing the annotations
-      annotations.forEach((annotation, index) => {
-        const { x, y } = annotation;
-
-        const scaledX = x * videoFrame.width;
-        const scaledY = y * videoFrame.height;
-        
-        context.lineTo(scaledX, scaledY);
-        context.stroke();
-      });
-
-      // Checking if the distance is less than the closeDistance variable and there are more than 2 annotations
-      if (distance < closeDistance && annotations.length > 2) {
-        context.lineTo(firstAnnotation.x * videoFrame.width, firstAnnotation.y * videoFrame.height);
-        context.stroke();
-        context.closePath();
-
-		    // Setting the finishedFlag to true
-		    dispatch(setAnnotationFinished());
-      }
-    }
-
     // Drawing the annotation points
     annotations.forEach((annotation) => {
       const { x, y } = annotation;
 
-      const scaledX = x * videoFrame.width;
-      const scaledY = y * videoFrame.height;
+      const scaledX = x * imageDiv.width;
+      const scaledY = y * imageDiv.height;
 
       context.fillStyle = 'red';
       context.beginPath();
@@ -165,34 +126,42 @@ const ImageAnnotation = () => {
       context.closePath();
     });
 
+    // Drawing the lines between the annotations
+    for (let i = 1; i < annotations.length; i++) {
+
+      // Draw line between (i)th and (i-1)th annotations
+      context.beginPath();
+      context.moveTo(annotations[i].x * imageDiv.width, annotations[i].y * imageDiv.height);
+      context.lineTo(annotations[i-1].x * imageDiv.width, annotations[i-1].y * imageDiv.height);
+      context.stroke();
+      context.closePath();
+    }
+
+    // Set up resize event handler to update windowSize and thus redraw canvas on window resize 
     function handleResize() {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     }
-
     addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener('resize', handleResize);
     };
 
-    
   }, [annotations, windowSize]);
 
-  
 
   // Returning the component
   return (
     <div id="imageContainer" width="100%">
-      <img id="videoFrame"
+      <img id="imageDiv"
         src={selectedImageIndex === -1 ? "" : imageData.images[selectedImageIndex].file}
         alt="Image"
         style={{ width: '100%', height: 'auto' }}
         onMouseDown={() => {
           if (annotations.length === 0) {
-            canvasRef.current.width = videoFrame.width;
-            canvasRef.current.height= videoFrame.height;
-            canvas.style.top = videoFrame.offsetTop+'px';
-            canvas.style.left = videoFrame.offsetLeft+'px';
+            canvasRef.current.width = imageDiv.width;
+            canvasRef.current.height= imageDiv.height;
+            canvas.style.top = imageDiv.offsetTop+'px';
+            canvas.style.left = imageDiv.offsetLeft+'px';
           }
         }}
         onClick={handleImageClick}
