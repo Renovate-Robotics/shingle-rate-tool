@@ -122,9 +122,25 @@ export const imagesSlice = createSlice({
             state.images[state.selectedImageIndex].finishedFlag = true;
         },
 
+        // Reducer function to clear an image's annotations
+        clearAnnotation: (state, action) => {
+            state.images[state.selectedImageIndex].annotations = [];
+            state.images[state.selectedImageIndex].finishedFlag = false;
+            state.images[state.selectedImageIndex].area_px = 0;
+        },
+
         // Reducer function to set an image's calculated area
         setCalculatedArea: (state, action) => {
             state.images[state.selectedImageIndex].area_px = action.payload.area_px;
+        },
+
+        // Reducer function to change entire state
+        setNewImagesState: (state, action) => {
+            
+            // Looping through each key in the payload and update the state
+            for (const key of Object.keys(action.payload)) {
+                state[key] = action.payload[key]
+            }
         }
     }
 });
@@ -132,7 +148,7 @@ export const imagesSlice = createSlice({
 // Exporting the reducer functions
 export const { addImage, removeImage, moveImageUp, moveImageDown, 
                changeTimestamp, changeRooferCount, changeSelected, changeReference,
-               addAnnotation, setAnnotationFinished, setCalculatedArea } = imagesSlice.actions;
+               addAnnotation, setAnnotationFinished, clearAnnotation, setCalculatedArea, setNewImagesState } = imagesSlice.actions;
 
 // Exporting the imagesSlice reducer function
 export default imagesSlice.reducer;

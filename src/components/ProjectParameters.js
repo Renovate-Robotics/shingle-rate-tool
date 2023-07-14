@@ -21,10 +21,10 @@ const ProjectParameters = () => {
                     <div class={param.value ? "field" : "error field"}>
                         <label>{param.display_name}</label>
                         <input value={param.value} 
-                               type="number" 
+                               type= {param.type}
                                placeholder={param.display_name} 
                                onChange=
-                               {(e) => dispatch(updateProjectParameter({param_name: param_name, value: parseInt(e.target.value)}))}
+                               {(e) => dispatch(updateProjectParameter({param_name: param_name, value: param.type === "number" ? parseFloat(e.target.value) : e.target.value}))}
                         />
                     </div>
                 ))

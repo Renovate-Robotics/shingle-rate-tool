@@ -89,7 +89,7 @@ const ProductivityCharts = () => {
             labels: ['Data Points'],
             datasets: [
             {
-                label: 'Regression',
+                label: 'sqft/min/roofer',
                 data: productivities,
                 backgroundColor: 'rgba(255,105,97, 0.2)',
                 borderColor: 'rgba(255,105,97, 1)',

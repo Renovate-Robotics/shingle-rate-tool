@@ -2,9 +2,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 import React, { useEffect } from 'react';
 import { selectImages, selectProjectParameters } from '../store/selectors';
+import { saveObjectAsFile } from '../utils/utils';
 
-import { addImage, removeImage, moveImageUp, moveImageDown, 
-	     changeTimestamp, changeRooferCount, changeSelected, changeReference} from '../store/reducers/imagesSlice';
+import { setNewProjectParametersState } from '../store/reducers/projectParametersSlice';
+import { addImage, removeImage, moveImageUp, moveImageDown, clearAnnotation, 
+	     changeTimestamp, changeRooferCount, changeSelected, changeReference, setNewImagesState} from '../store/reducers/imagesSlice';
 
 // Define the ImagesMetadata component
 const ImagesMetadata = () => {
@@ -23,7 +25,7 @@ const ImagesMetadata = () => {
 	let timestampSortedFlag = isSorted(imageData.images.map(x=>x.timestamp))
 
 	// Set the class for the timestamp input based on whether the array is sorted or not
-	let timestampClass = timestampSortedFlag ? "ui input" : "ui input error"
+	let timestampClass = timestampSortedFlag ? "ui fluid input" : "ui fluid input error"
 
 	// Add an event listener for keydown events and remove it when the component unmounts
 	useEffect(() => {
@@ -42,6 +44,78 @@ const ImagesMetadata = () => {
 		  else if (event.key === "s" && imageData.selectedImageIndex < (imageData.images.length-1)) {
 			dispatch(changeSelected({idx: imageData.selectedImageIndex+1}))
 		  }
+		}
+	}
+
+	// Download the entire store to local storage
+	function saveStore() {
+		
+		// Construct new save object with project parameters and image data
+		const saveData = {
+			projectParameters: projectParameters,
+			imageData: imageData
+		}
+
+		// Save the project parameters and image data to local storage
+		saveObjectAsFile(saveData, (projectParameters.project_name.value + '.json'))
+	};
+
+	// Load the entire store from local JSON file
+	function loadStore(file) {
+		
+		// Create reader
+		const reader = new FileReader();
+		reader.onload = (e) => {
+
+			// Parse the JSON file
+			const text = e.target.result;
+			const obj = JSON.parse(text);
+
+			const newProjectParameters = obj.projectParameters;
+			const newImageData = obj.imageData;
+
+			// Set the project parameters and image data in the Redux
+			// store to the parsed JSON file
+			dispatch(setNewProjectParametersState(newProjectParameters))
+			dispatch(setNewImagesState(newImageData))
+		}
+
+		// Read the file as text
+		reader.readAsText(file);
+
+	}
+
+	// This function takes an array of files and reads them as data URLs using the FileReader API.
+	// The resulting data URLs are added to an array and then dispatched to the Redux store as new images.
+	function addImages(files) {
+
+		// Initialize an empty array to store the data URLs
+		const images = []
+
+		// Loop over each file in the array
+		for (let i = 0, len = files.length; i < len; i++) {
+			var file = files[i];
+
+			// Create a new FileReader object
+			var reader = new FileReader();
+
+			// Add an onload event listener to the reader
+			reader.onload = (function(f) {
+				return function(e) {
+					// Push the resulting data URL to the images array
+					images.push({index: i, name: f.name, value: this.result})
+
+					// If all files have been read, dispatch the new image to the Redux store
+					if (images.length === files.length) {
+
+						images.sort((a,b) => a.index - b.index).map(x=>x.index);
+						dispatch(addImage({names: images.map(x=>x.name), urls: images.map(x=>x.value)}));
+					}
+				};
+			})(file);
+
+			// Read the file as a data URL (base 64 image)
+			reader.readAsDataURL(file);
 		}
 	}
 
@@ -105,7 +179,7 @@ const ImagesMetadata = () => {
 						{/* Render the number of roofers input if the current image is not the reference image */}
 						<td data-label="# Roofers">
 							{i === imageData.referenceImageIndex ? <></> : (
-								<div class = {timestampClass}>
+								<div class = "ui fluid input">
 									<input type="number" value={x.num_roofers} onChange={(e) => dispatch(changeRooferCount({idx: i, num_roofers: e.target.value}))} />
 								</div>)}
 						</td>
@@ -117,19 +191,25 @@ const ImagesMetadata = () => {
 
 						{/* Render the controls for the image */}
 						<td data-label="Controls">
-							{i === imageData.referenceImageIndex ? <></> : 
-							(<div>
+						{<div>
+							<button class="ui icon button" onClick={(e) => dispatch(clearAnnotation({}))}>
+								<i class="arrow undo icon"></i>
+							</button>
+							{(i === imageData.referenceImageIndex) ? <></> : (
 							<button class="ui icon button" onClick={(e) => dispatch(moveImageUp({idx: i}))}>
 								<i class="arrow up icon"></i>
 							</button>
+							)}
+							{(i === imageData.referenceImageIndex) ? <></> : (
 							<button class="ui icon button" onClick={(e) => dispatch(moveImageDown({idx: i}))}>
 								<i class="arrow down icon"></i>
 							</button>
+							)}
 							<button class="ui icon button" onClick={(e) => dispatch(removeImage({idx: i}))}>
 								<i class="trash icon"></i>
 							</button>
-							</div>)
-							}
+							</div>}
+							
 						</td>
 					</tr>)
 					}
@@ -138,15 +218,34 @@ const ImagesMetadata = () => {
 			  {/* Render the "Add Image(s)" button */}
 			  <tfoot class="full-width">
 				<tr><th colSpan="7">
+
+					<button className="ui left floated small labeled icon button"
+							onClick={() => saveStore()}>
+						<i className="save icon"></i> Save Project
+					</button>
+
+					<label htmlFor="load-store" className="ui left floated small labeled icon button">
+						<i className="upload icon"></i> Load Project
+					</label>
+
 					<label htmlFor="file-input" className="ui right floated small primary labeled icon button">
 						<i className="image icon"></i> Add Image(s)
 					</label>
+
+					<input
+						id       = "load-store" type="file"
+						accept   = "application/JSON" 
+						style    = {{ display: 'none' }}
+						onClick  = {(e) => e.target.value = null}
+						onChange = {(e) => loadStore(e.target.files[0])}
+					/>
+
 					<input
 						id       = "file-input" type="file"
 						accept   = "image/*" multiple
 						style    = {{ display: 'none' }}
 						onClick  = {(e) => e.target.value = null}
-						onChange = {(e) => dispatch(addImage({names:[...e.target.files].map(x=>x.name), urls: [...e.target.files].map(x=> window.URL.createObjectURL(x))}))}
+						onChange = {(e) => addImages(e.target.files)}
 					/>
 				</th></tr>
 			</tfoot>

@@ -7,6 +7,11 @@ html, body {
     overflow: hidden;
   }
 
+body {
+    width: 100%;
+    background-color: transparent !important;
+}
+
 .filetablecontainer {
     margin-top: 20px;
     overflow-y: auto;
@@ -15,7 +20,6 @@ html, body {
 
 tbody, thead {
     text-align: center;
-    
 }
 
 .ui.table thead tr:first-child > th{
@@ -34,6 +38,7 @@ tbody, thead {
     height: 100%;
     display: flex;
     flex-direction: column;
+    background-color: transparent;
 }
 
 /* #imageEditorSegment {
@@ -42,6 +47,7 @@ tbody, thead {
 
 .ui.grid {
     height: 100%;
+    background-color: transparent;
 }
 
 .left {
@@ -53,4 +59,11 @@ tbody, thead {
     display: flex; 
     flex-direction: column;
     height: 100%;
+}
+
+.controlarrowparent {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    white-space: nowrap;
 }

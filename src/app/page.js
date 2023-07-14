@@ -25,20 +25,17 @@ export default function Main() {
     <div class="ui grid">
 
       {/* Left column */}
-      <div class="eight wide column">
-        <div class="ui segment left">
-          <ImageAnnotation/>
-          <ImageMetadataTable/>
-        </div>
-      </div>
-
-      {/* Middle column */}
       <div class="two wide column rightcol">
+
+        <div class="ui segment">
+          <img src='logo.png' width="100%"/>
+        </div>
+
         <div class="ui segment">
           <ProjectParameters/>
         </div>
 
-        <div class="ui segment">
+        {/* <div class="ui segment">
           <div class="ui message">
             <div class="header">
               Current Labor Hours Needed
@@ -47,12 +44,23 @@ export default function Main() {
             <div class="header">
               Cost of Labor
             </div>
-            {/* <p>${(laborHours*projectData.roofer_wage).toFixed(2)}</p> */}
+            <p>${(laborHours*projectData.roofer_wage).toFixed(2)}</p>
           </div>
+        </div> */}
+      </div>
+      
+
+      
+
+      {/* Right column */}
+      <div class="eight wide column">
+        <div class="ui segment left">
+          <ImageAnnotation/>
+          <ImageMetadataTable/>
         </div>
       </div>
 
-      {/* Right column */}
+      {/* Middle column */}
       <div class="six wide column rightcol">
         <div class="ui segment">
           <ProductivityCharts/>

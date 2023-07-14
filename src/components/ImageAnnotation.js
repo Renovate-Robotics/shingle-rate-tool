@@ -8,6 +8,10 @@ import { addAnnotation, setAnnotationFinished, setCalculatedArea } from '../stor
 // Defining the ImageAnnotation component
 const ImageAnnotation = () => {
 
+  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  const videoFrame = document.getElementById('videoFrame');
+
   // Initializing the useDispatch and useSelector hooks
   const dispatch = useDispatch();
   const imageData = useSelector(selectImages);
@@ -15,7 +19,7 @@ const ImageAnnotation = () => {
 
   // Initializing the canvasRef and closeDistance variables
   const canvasRef = useRef(null);
-  const closeDistance = 30;
+  const closeDistance = 0.05;
 
   // Initializing the annotations and finishedFlag variables
   let annotations = selectedImageIndex === -1 ? [] : imageData.images[selectedImageIndex].annotations 
@@ -31,6 +35,7 @@ const ImageAnnotation = () => {
 
     // Creating an annotation object with the coordinates
     const annotation = { x, y };
+    const scaledAnnotation = {x: (x/videoFrame.width), y: (y/videoFrame.height)}
 
     // Checking if the annotation is finished
     if (!finishedFlag) {
@@ -43,13 +48,13 @@ const ImageAnnotation = () => {
         const distance = Math.hypot(
           annotation.x - firstAnnotation.x,
           annotation.y - firstAnnotation.y
-        );
+        ) * videoFrame.height;
   
         // Checking if the distance is less than the closeDistance variable
         if (distance > closeDistance) {
 
           // Adding the new annotation to the annotations array
-          dispatch(addAnnotation({annotation: annotation}))
+          dispatch(addAnnotation({annotation: scaledAnnotation}))
           
         } else {
 
@@ -62,7 +67,7 @@ const ImageAnnotation = () => {
         }
       } 
       else {
-		    dispatch(addAnnotation({annotation: annotation}))
+		    dispatch(addAnnotation({annotation: scaledAnnotation}))
       }
     }
   };
@@ -85,8 +90,20 @@ const ImageAnnotation = () => {
 
   // Defining the useEffect hook
   useEffect(() => {
+
+    console.log(annotations)
+
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
+    // const parentRect = canvasRef.current.getBoundingClientRect();
+
+    const videoFrame = document.getElementById('videoFrame');
+
+    canvas.width = videoFrame.width;
+    canvas.height= videoFrame.height;
+
+    canvas.style.top = videoFrame.offsetTop+'px';
+    canvas.style.left = videoFrame.offsetLeft+'px';
 
     // Clearing the canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -100,7 +117,7 @@ const ImageAnnotation = () => {
 
       // Starting the path
       context.beginPath();
-      context.moveTo(annotations[0].x, annotations[0].y);
+      context.moveTo(annotations[0].x * videoFrame.width, annotations[0].y * videoFrame.height);
 
       // Getting the first and last annotations
       const firstAnnotation = annotations[0];
@@ -115,13 +132,17 @@ const ImageAnnotation = () => {
       // Drawing the annotations
       annotations.forEach((annotation, index) => {
         const { x, y } = annotation;
-        context.lineTo(x, y);
+
+        const scaledX = x * videoFrame.width;
+        const scaledY = y * videoFrame.height;
+        
+        context.lineTo(scaledX, scaledY);
         context.stroke();
       });
 
       // Checking if the distance is less than the closeDistance variable and there are more than 2 annotations
       if (distance < closeDistance && annotations.length > 2) {
-        context.lineTo(firstAnnotation.x, firstAnnotation.y);
+        context.lineTo(firstAnnotation.x * videoFrame.width, firstAnnotation.y * videoFrame.height);
         context.stroke();
         context.closePath();
 
@@ -134,30 +155,56 @@ const ImageAnnotation = () => {
     annotations.forEach((annotation) => {
       const { x, y } = annotation;
 
+      const scaledX = x * videoFrame.width;
+      const scaledY = y * videoFrame.height;
+
       context.fillStyle = 'red';
       context.beginPath();
-      context.arc(x, y, 2, 0, 2 * Math.PI);
+      context.arc(scaledX, scaledY, 2, 0, 2 * Math.PI);
       context.fill();
       context.closePath();
     });
 
+    function handleResize() {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    }
+
+    addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+
     
-  }, [annotations]);
+  }, [annotations, windowSize]);
+
+  
 
   // Returning the component
   return (
-    <div width="100%">
-      <img
+    <div id="imageContainer" width="100%">
+      <img id="videoFrame"
         src={selectedImageIndex === -1 ? "" : imageData.images[selectedImageIndex].file}
         alt="Image"
         style={{ width: '100%', height: 'auto' }}
+        onMouseDown={() => {
+          if (annotations.length === 0) {
+            canvasRef.current.width = videoFrame.width;
+            canvasRef.current.height= videoFrame.height;
+            canvas.style.top = videoFrame.offsetTop+'px';
+            canvas.style.left = videoFrame.offsetLeft+'px';
+          }
+        }}
         onClick={handleImageClick}
-      />
+      >
+
+      </img>
+
       <canvas
+        id="canvas"
         ref={canvasRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
         style={{
+          
           position: 'absolute',
           top: 0,
           left: 0,
