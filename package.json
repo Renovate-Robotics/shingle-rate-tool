@@ -11,6 +11,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",
     "chart.js": "^4.3.0",
+    "excellentexport": "^3.9.6",
     "next": "13.4.7",
     "react": "18.2.0",
     "react-chartjs-2": "^5.2.0",

@@ -25,7 +25,13 @@ const ImageAnnotation = () => {
   const canvasRef = useRef(null);
 
   // Initializing the annotations and finishedFlag variables
-  let annotations = selectedImageIndex === -1 ? [] : imageData.images[selectedImageIndex].annotations 
+  let [annotations, setAnnotations] = useState([]);
+  useEffect(() => {
+    // Update the annotations whenever selectedImageIndex changes
+    annotations = selectedImageIndex === -1 ? [] : imageData.images[selectedImageIndex].annotations;
+    setAnnotations(annotations);
+  }, [selectedImageIndex, imageData.images]);
+
   let finishedFlag = selectedImageIndex === -1 ? false : imageData.images[selectedImageIndex].finishedFlag 
 
   // Do the following when user clicks on the image
@@ -111,6 +117,8 @@ const ImageAnnotation = () => {
     // Setting the stroke style and line width
     context.strokeStyle = 'red';
     context.lineWidth = 1;
+
+    console.log(annotations)
 
     // Drawing the annotation points
     annotations.forEach((annotation) => {
