@@ -92,7 +92,7 @@ const ImagesMetadata = () => {
 
 		// useEffect(() => {
 			const initExcellentExport = async () => {
-				const { convert } = await import('ExcellentExport')
+				const { convert } = await import('excellentexport')
 				// const excellentExport = new ExcellentExport()
 				// Add logic with `term`
 
