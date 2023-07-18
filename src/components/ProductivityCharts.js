@@ -119,9 +119,9 @@ const ProductivityCharts = () => {
 
                 &nbsp;
 
-                <div class="ui form">
-                    <div class="fields">
-                        <div class="field">
+                <div className="ui form">
+                    <div className="fields">
+                        <div className="field">
                             <label>Regression Order</label>
                             <input
                                 type="number"

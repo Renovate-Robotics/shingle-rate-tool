@@ -14,11 +14,11 @@ const ProjectParameters = () => {
 
     // Rendering the form with input fields for each project parameter
     return (
-        <div class="ui form">
+        <div className="ui form">
             {
                 // Mapping through each project parameter and rendering an input field for it
                 Object.entries(projectParameters).map(([param_name, param]) => (
-                    <div class={param.value ? "field" : "error field"}>
+                    <div className={param.value ? "field" : "error field"} key={param_name}>
                         <label>{param.display_name}</label>
                         <input value={param.value} 
                                type= {param.type}

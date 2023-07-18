@@ -22,12 +22,12 @@ export default function Main() {
     <Provider store={store}>
 
     {/* Main grid */}
-    <div class="ui grid">
+    <div className="ui grid">
 
       {/* Left column */}
-      <div class="two wide column rightcol">
+      <div className="two wide column rightcol">
 
-        <div class="ui segment">
+        <div className="ui segment">
           <a href="https://www.renovaterobotics.com/" target="_blank">
             <img src='logo.png' width="100%"/>
 
@@ -35,17 +35,17 @@ export default function Main() {
           
         </div>
 
-        <div class="ui segment">
+        <div className="ui segment">
           <ProjectParameters/>
         </div>
 
-        {/* <div class="ui segment">
-          <div class="ui message">
-            <div class="header">
+        {/* <div className="ui segment">
+          <div className="ui message">
+            <div className="header">
               Current Labor Hours Needed
             </div>
             <p>{laborHours.toFixed(1)}</p>
-            <div class="header">
+            <div className="header">
               Cost of Labor
             </div>
             <p>${(laborHours*projectData.roofer_wage).toFixed(2)}</p>
@@ -57,16 +57,16 @@ export default function Main() {
       
 
       {/* Right column */}
-      <div class="eight wide column">
-        <div class="ui segment left">
+      <div className="eight wide column">
+        <div className="ui segment left">
           <ImageAnnotation/>
           <ImageMetadataTable/>
         </div>
       </div>
 
       {/* Middle column */}
-      <div class="six wide column rightcol">
-        <div class="ui segment">
+      <div className="six wide column rightcol">
+        <div className="ui segment">
           <ProductivityCharts/>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import React, { useEffect } from 'react';
 import { selectImages, selectProjectParameters } from '../store/selectors';
 import { saveObjectAsFile } from '../utils/utils';
-import ExcellentExport from 'excellentexport';
+// import ExcellentExport from 'excellentexport';
 
 import { setNewProjectParametersState } from '../store/reducers/projectParametersSlice';
 import { addImage, removeImage, moveImageUp, moveImageDown, clearAnnotation, 
@@ -88,42 +88,42 @@ const ImagesMetadata = () => {
 
 	// This function exports the majority of the store variables to an Excel file
 	// using the excellentexport library
-	function exportExcel() {
+	// function exportExcel() {
 		
-		const options = {
-			format: 'xlsx',
-			filename: projectParameters.project_name.value,
-			openAsDownload: true
-		}
+	// 	const options = {
+	// 		format: 'xlsx',
+	// 		filename: projectParameters.project_name.value,
+	// 		openAsDownload: true
+	// 	}
 
-		const projectParametersArray = Object.keys(projectParameters).map(x => [ projectParameters[x].display_name, projectParameters[x].value ] )
+	// 	const projectParametersArray = Object.keys(projectParameters).map(x => [ projectParameters[x].display_name, projectParameters[x].value ] )
 
-		const imageDataFields = ["Filename", "Reference?", "Timestamp (min)", "# Roofers", "Area (px)", "Area (sqft)"]
-		const imageDataArray = imageData.images.map((x,i) => 
-			[	x.name, 
-				i === imageData.referenceImageIndex ? "Yes" : "No",
-				x.timestamp, 
-				x.num_roofers, 
-				x.area_px, 
-				x.area_px / imageData.images[imageData.referenceImageIndex].area_px * projectParameters.roof_area.value])
+	// 	const imageDataFields = ["Filename", "Reference?", "Timestamp (min)", "# Roofers", "Area (px)", "Area (sqft)"]
+	// 	const imageDataArray = imageData.images.map((x,i) => 
+	// 		[	x.name, 
+	// 			i === imageData.referenceImageIndex ? "Yes" : "No",
+	// 			x.timestamp, 
+	// 			x.num_roofers, 
+	// 			x.area_px, 
+	// 			x.area_px / imageData.images[imageData.referenceImageIndex].area_px * projectParameters.roof_area.value])
 
-		const sheets = [
-			{
-				name: projectParameters.project_name.value, // Sheet name
-				from: {
-					array: [["Project Parameters"], [],  ...projectParametersArray, [], ["Image Data"], [], imageDataFields, ...imageDataArray] // Array with the data. Array where each element is a row. Every row is an array of the cells.
-				},
-				removeColumns: [], // Array of column indexes (from 0)
-				// filterRowFn: function(row) {return true}, // Function to decide which rows are returned
-				// fixValue: function(value, row, column) {return fixedValue}, // Function to fix values, receiving value, row num, column num
-				// fixArray: function(array) {return array}, // Function to manipulate the whole data array
-				formats: [] // Array of formats for each column. See formats below.
-			}
-		]
+	// 	const sheets = [
+	// 		{
+	// 			name: projectParameters.project_name.value, // Sheet name
+	// 			from: {
+	// 				array: [["Project Parameters"], [],  ...projectParametersArray, [], ["Image Data"], [], imageDataFields, ...imageDataArray] // Array with the data. Array where each element is a row. Every row is an array of the cells.
+	// 			},
+	// 			removeColumns: [], // Array of column indexes (from 0)
+	// 			// filterRowFn: function(row) {return true}, // Function to decide which rows are returned
+	// 			// fixValue: function(value, row, column) {return fixedValue}, // Function to fix values, receiving value, row num, column num
+	// 			// fixArray: function(array) {return array}, // Function to manipulate the whole data array
+	// 			formats: [] // Array of formats for each column. See formats below.
+	// 		}
+	// 	]
 
-		return ExcellentExport.convert(options, sheets);
+	// 	return ExcellentExport.convert(options, sheets);
 		
-	}
+	// }
 
 	// This function takes an array of files and reads them as data URLs using the FileReader API.
 	// The resulting data URLs are added to an array and then dispatched to the Redux store as new images.
@@ -163,7 +163,7 @@ const ImagesMetadata = () => {
 	return (
 
 		<div className="filetablecontainer">
-			<table class="ui celled table">
+			<table className="ui celled table">
 
 				{/* Render the table header */}
 				<thead><tr>
@@ -183,24 +183,24 @@ const ImagesMetadata = () => {
 					{/* Map over the images in the imageData array and render a row for each image */}
 					{imageData.images.map((x, i)=>
 					
-					<tr>
+					<tr key={"row_"+i}>
 						{/* Button to select/unselect an image */}
 						<td data-label="Selected">
 							{
-							<button class="ui icon button" onClick={(e) => dispatch(changeSelected({idx: i}))}>
+							<button className="ui icon button" onClick={(e) => dispatch(changeSelected({idx: i}))}>
 							{i === imageData.selectedImageIndex ? 
-								<i class="green large check circle icon" /> : 
-								<i class="large circle outline icon" />}
+								<i className="green large check circle icon" /> : 
+								<i className="large circle outline icon" />}
 							</button>}
 						</td>
 
 						{/* Button to set/unset the reference image */}
 						<td data-label="Reference">
 							{
-							<button class="ui icon button" onClick={(e) => dispatch(changeReference({idx: i}))}>
+							<button className="ui icon button" onClick={(e) => dispatch(changeReference({idx: i}))}>
 							{i === imageData.referenceImageIndex ? 
-								<i class="orange large check circle icon" /> : 
-								<i class="large circle outline icon" />}
+								<i className="orange large check circle icon" /> : 
+								<i className="large circle outline icon" />}
 							</button>
 							}
 						</td>
@@ -211,7 +211,7 @@ const ImagesMetadata = () => {
 						{/* Render the timestamp input if the current image is not the reference image */}
 						<td data-label="Time (min)">
 							{i === imageData.referenceImageIndex ? <></> : 
-								(<div class = {timestampClass}>
+								(<div className= {timestampClass}>
 									<input type="number" value={x.timestamp} onChange={(e) => dispatch(changeTimestamp({idx: i, timestamp: e.target.value}))}/>
 								</div>)}
 						</td>
@@ -219,7 +219,7 @@ const ImagesMetadata = () => {
 						{/* Render the number of roofers input if the current image is not the reference image */}
 						<td data-label="# Roofers">
 							{i === imageData.referenceImageIndex ? <></> : (
-								<div class = "ui fluid input">
+								<div className= "ui fluid input">
 									<input type="number" value={x.num_roofers} onChange={(e) => dispatch(changeRooferCount({idx: i, num_roofers: e.target.value}))} />
 								</div>)}
 						</td>
@@ -232,21 +232,21 @@ const ImagesMetadata = () => {
 						{/* Render the controls for the image */}
 						<td data-label="Controls">
 						{<div>
-							<button class="ui icon button" onClick={(e) => dispatch(clearAnnotation({}))}>
-								<i class="arrow undo icon"></i>
+							<button className="ui icon button" onClick={(e) => dispatch(clearAnnotation({idx: i}))}>
+								<i className="arrow undo icon"></i>
 							</button>
 							{(i === imageData.referenceImageIndex) ? <></> : (
-							<button class="ui icon button" onClick={(e) => dispatch(moveImageUp({idx: i}))}>
-								<i class="arrow up icon"></i>
+							<button className="ui icon button" onClick={(e) => dispatch(moveImageUp({idx: i}))}>
+								<i className="arrow up icon"></i>
 							</button>
 							)}
 							{(i === imageData.referenceImageIndex) ? <></> : (
-							<button class="ui icon button" onClick={(e) => dispatch(moveImageDown({idx: i}))}>
-								<i class="arrow down icon"></i>
+							<button className="ui icon button" onClick={(e) => dispatch(moveImageDown({idx: i}))}>
+								<i className="arrow down icon"></i>
 							</button>
 							)}
-							<button class="ui icon button" onClick={(e) => dispatch(removeImage({idx: i}))}>
-								<i class="trash icon"></i>
+							<button className="ui icon button" onClick={(e) => dispatch(removeImage({idx: i}))}>
+								<i className="trash icon"></i>
 							</button>
 							</div>}
 							
@@ -256,7 +256,7 @@ const ImagesMetadata = () => {
 			  	</tbody>
 
 			  {/* Render the "Add Image(s)" button */}
-			  <tfoot class="full-width">
+			  <tfoot className="full-width">
 				<tr><th colSpan="7">
 
 					<button className="ui left floated small labeled icon button"
@@ -268,8 +268,8 @@ const ImagesMetadata = () => {
 						<i className="upload icon"></i> Load Project
 					</label>
 
-					<label className="ui green left floated small labeled icon button"
-						   onClick={() => exportExcel()}>
+					<label className="ui green left floated small labeled icon button">
+						    {/* onClick={() => exportExcel()}> */}
 						<i className="file excel icon"></i> Export to Excel
 					</label>
 

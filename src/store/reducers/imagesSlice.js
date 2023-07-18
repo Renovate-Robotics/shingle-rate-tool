@@ -124,9 +124,9 @@ export const imagesSlice = createSlice({
 
         // Reducer function to clear an image's annotations
         clearAnnotation: (state, action) => {
-            state.images[state.selectedImageIndex].annotations = [];
-            state.images[state.selectedImageIndex].finishedFlag = false;
-            state.images[state.selectedImageIndex].area_px = 0;
+            state.images[action.payload.idx].annotations = [];
+            state.images[action.payload.idx].finishedFlag = false;
+            state.images[action.payload.idx].area_px = 0;
         },
 
         // Reducer function to set an image's calculated area
