@@ -28,7 +28,11 @@ export default function Main() {
       <div class="two wide column rightcol">
 
         <div class="ui segment">
-          <img src='logo.png' width="100%"/>
+          <a href="https://www.renovaterobotics.com/" target="_blank">
+            <img src='logo.png' width="100%"/>
+
+          </a>
+          
         </div>
 
         <div class="ui segment">

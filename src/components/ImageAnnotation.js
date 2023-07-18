@@ -146,7 +146,7 @@ const ImageAnnotation = () => {
       window.removeEventListener('resize', handleResize);
     };
 
-  }, [annotations, windowSize]);
+  }, [selectedImageIndex, annotations, windowSize]);
 
 
   // Returning the component

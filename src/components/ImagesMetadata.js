@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import React, { useEffect } from 'react';
 import { selectImages, selectProjectParameters } from '../store/selectors';
 import { saveObjectAsFile } from '../utils/utils';
+import ExcellentExport from 'excellentexport';
 
 import { setNewProjectParametersState } from '../store/reducers/projectParametersSlice';
 import { addImage, removeImage, moveImageUp, moveImageDown, clearAnnotation, 
@@ -83,6 +84,45 @@ const ImagesMetadata = () => {
 		// Read the file as text
 		reader.readAsText(file);
 
+	}
+
+	// This function exports the majority of the store variables to an Excel file
+	// using the excellentexport library
+	function exportExcel() {
+		
+		const options = {
+			format: 'xlsx',
+			filename: projectParameters.project_name.value,
+			openAsDownload: true
+		}
+
+		const projectParametersArray = Object.keys(projectParameters).map(x => [ projectParameters[x].display_name, projectParameters[x].value ] )
+
+		const imageDataFields = ["Filename", "Reference?", "Timestamp (min)", "# Roofers", "Area (px)", "Area (sqft)"]
+		const imageDataArray = imageData.images.map((x,i) => 
+			[	x.name, 
+				i === imageData.referenceImageIndex ? "Yes" : "No",
+				x.timestamp, 
+				x.num_roofers, 
+				x.area_px, 
+				x.area_px / imageData.images[imageData.referenceImageIndex].area_px * projectParameters.roof_area.value])
+
+		const sheets = [
+			{
+				name: projectParameters.project_name.value, // Sheet name
+				from: {
+					array: [["Project Parameters"], [],  ...projectParametersArray, [], ["Image Data"], [], imageDataFields, ...imageDataArray] // Array with the data. Array where each element is a row. Every row is an array of the cells.
+				},
+				removeColumns: [], // Array of column indexes (from 0)
+				// filterRowFn: function(row) {return true}, // Function to decide which rows are returned
+				// fixValue: function(value, row, column) {return fixedValue}, // Function to fix values, receiving value, row num, column num
+				// fixArray: function(array) {return array}, // Function to manipulate the whole data array
+				formats: [] // Array of formats for each column. See formats below.
+			}
+		]
+
+		return ExcellentExport.convert(options, sheets);
+		
 	}
 
 	// This function takes an array of files and reads them as data URLs using the FileReader API.
@@ -226,6 +266,11 @@ const ImagesMetadata = () => {
 
 					<label htmlFor="load-store" className="ui left floated small labeled icon button">
 						<i className="upload icon"></i> Load Project
+					</label>
+
+					<label className="ui green left floated small labeled icon button"
+						   onClick={() => exportExcel()}>
+						<i className="file excel icon"></i> Export to Excel
 					</label>
 
 					<label htmlFor="file-input" className="ui right floated small primary labeled icon button">
