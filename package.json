@@ -18,7 +18,8 @@
     "react-dom": "18.2.0",
     "react-redux": "^8.1.1",
     "redux": "^4.2.1",
-    "regression": "^2.0.1"
+    "regression": "^2.0.1",
+    "semantic-ui-css": "^2.5.0"
   },
   "devDependencies": {
     "eslint": "^8.44.0",
