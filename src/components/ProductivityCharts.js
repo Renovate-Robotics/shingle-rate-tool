@@ -112,6 +112,8 @@ const ProductivityCharts = () => {
             },
         };
 
+        const average_productivity = productivities.reduce((a, b) => a + b.y, 0)/productivities.length
+
         // Rendering the charts and input field
         return (
             <div>
@@ -142,7 +144,16 @@ const ProductivityCharts = () => {
 
                 &nbsp;
 
-                Average: {(productivities.reduce((a, b) => a + b.y, 0)/productivities.length).toFixed(2)} sqft/min/roofer
+                <b>Average: </b>
+
+                <br />
+                <br />
+                
+                {average_productivity.toFixed(2)} sqft/min/roofer
+
+                <br />
+
+                {(average_productivity/projectData.exposed_shingle_area.value).toFixed(2)} shingles/min/roofer
 
             </div>
         );

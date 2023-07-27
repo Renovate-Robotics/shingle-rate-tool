@@ -5,7 +5,7 @@ import { createSlice } from '@reduxjs/toolkit'
 const initialState = {
     project_name: {value: "Project Name", display_name: "Project Name", type: "text"},
     roof_area: {value: 6374, display_name: "Roof Area (ft^2)", type: "number"}, 
-    shingle_size: {value: 3.6, display_name: "Shingle Size (ft^2)", type: "number"},
+    exposed_shingle_area: {value: 1.58, display_name: "Exposed Area of Shingle (ft^2)", type: "number"},
     roofer_wage: {value: 20, display_name: "Roofer Wage ($/hr)", type: "number"}, 
     labor_reduction: {value: 50, display_name: "Labor Reduction w/ Rufus (%)", type: "number"}, 
     rufus_lease_cost: {value: 1000, display_name: "Rufus Lease Cost ($/project)", type: "number"},
