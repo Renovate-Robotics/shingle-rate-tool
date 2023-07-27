@@ -142,7 +142,6 @@ const ProductivityCharts = () => {
 
                 <Scatter data={data2} options={options2} />
 
-                &nbsp;
 
                 <b>Average: </b>
 
